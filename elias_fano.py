@@ -1,15 +1,15 @@
 import hashlib
 import math
-
+import sys
 # read numbers
 nums = []
-with open("example_3.txt", "r") as f:
+with open(sys.argv[1], "r") as f:
     lines = f.readlines()
     for line in lines:
         nums.append(int(line.strip()))
 
 l = int(math.log2(nums[-1]/len(nums)))
-print("l = ", + str(l))
+print("l = " + str(l))
 
 L = []
 Utemp = []
