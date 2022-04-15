@@ -11,64 +11,57 @@ with open(sys.argv[1], "r") as f:
 l = int(math.log2(nums[-1]/len(nums)))
 print("l = " + str(l))
 
-L = []
-Utemp = []
+last_bits = bytearray()
+first_bites = bytearray()
 for n in nums:
-    L.append(n % (1 << l))
-    Utemp.append(n >> l)
-   
-U = []
-U.append(Utemp[0])
-for i in range(1, len(Utemp)):
-    U.append(Utemp[i] - Utemp[i-1])
+    last_bits.append(n % (1 << l))
+    first_bites.append(n >> l)
 
-L_bit_sequence = 0
-for number in L:
-    L_bit_sequence = (L_bit_sequence << l) | number
-
-a = len(L) * l # number of bits in L
-b = a % 8 # number of bits in L that are in the last byte
-# number of zeros needed to fill the last byte
-if b > 0:
-    after = 8 - b
-else: 
-    after = 0 
-n = a + after # number of bits in L
+U_diff = bytearray()
+U_diff.append(first_bites[0])
+for i in range(1, len(first_bites)):
+    U_diff.append(first_bites[i] - first_bites[i-1])
 
 L = bytearray()
-for i in range(n//8):
-    if n//8 -1 == i:
-        byte = L_bit_sequence << after & 0xFF
+x = 8 - l
+L.append(0)
+i = 0
+for number in last_bits:
+    if x > 0:
+        L[i] = L[i] | (number << x)
+        x -= l
+    elif x < 0:
+        L[i] = L[i] | (number >> -x)
+        i += 1
+        L.append(0)
+        L[i] = L[i] | ((number << (8 + x)) & 0xFF)
+        x = 8 + x - l
     else:
-        byte = L_bit_sequence >> (n - 8*(i+1) - after) & 0xFF
-    L.append(byte)
+        L[i] = L[i] | (number << x)
+        if i < math.ceil(l * len(last_bits) / 8) - 1:
+            i += 1
+            L.append(0)
+            x = 8 - l
 
 # print L bytes
 print("L")
 for i in L:
     print(f"{i:08b}")
 
-U_bit_sequence = 1
-for bit in U:
-    U_bit_sequence = (U_bit_sequence << bit + 1) | 1
-
-a = len(U) + sum(U) # number of bits in U
-b = a % 8 # number of bits in U that are in the last byte
-# number of zeros needed to fill the last byte
-if b > 0:
-    after = 8 - b
-else: 
-    after = 0 
-n = a + after # number of bits in U
 U = bytearray()
-for i in range(n//8):
-    if n//8 -1 == i:
-        byte = U_bit_sequence << after & 0xFF
+U.append(0)
+i = 0
+x = -1
+for bit in U_diff:
+    x += bit + 1
+    if x < 8:
+        U[i] = U[i] | (128 >> x)
     else:
-        byte = U_bit_sequence >> (n - 8*(i+1) - after) & 0xFF
-    U.append(byte)
+        U.append(0)
+        i += 1
+        x = x - 8
+        U[i] = U[i] | (128 >> x)
 
-# print U bytes
 print("U")
 for i in U:
     print(f"{i:08b}")
