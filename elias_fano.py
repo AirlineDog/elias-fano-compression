@@ -1,6 +1,7 @@
 import hashlib
 import math
 import sys
+
 # read numbers
 nums = []
 with open(sys.argv[1], "r") as f:
@@ -12,15 +13,15 @@ l = int(math.log2(nums[-1]/len(nums)))
 print("l = " + str(l))
 
 last_bits = bytearray()
-first_bites = bytearray()
+first_bits = bytearray()
 for n in nums:
     last_bits.append(n % (1 << l))
-    first_bites.append(n >> l)
+    first_bits.append(n >> l)
 
 U_diff = bytearray()
-U_diff.append(first_bites[0])
-for i in range(1, len(first_bites)):
-    U_diff.append(first_bites[i] - first_bites[i-1])
+U_diff.append(first_bits[0])
+for i in range(1, len(first_bits)):
+    U_diff.append(first_bits[i] - first_bits[i-1])
 
 L = bytearray()
 x = 8 - l
