@@ -3,46 +3,34 @@ import math
 import sys
 
 # read numbers
-nums = []
+numbers = []
 with open(sys.argv[1], "r") as f:
     lines = f.readlines()
     for line in lines:
-        nums.append(int(line.strip()))
+        numbers.append(int(line.strip()))
 
-l = int(math.log2(nums[-1]/len(nums)))
-print("l = " + str(l))
+m = numbers[-1] # max number
+l = math.floor(math.log2(m/len(numbers))) # length of binary representation
 
-last_bits = bytearray()
-first_bits = bytearray()
-for n in nums:
-    last_bits.append(n % (1 << l))
-    first_bits.append(n >> l)
-
-U_diff = bytearray()
-U_diff.append(first_bits[0])
-for i in range(1, len(first_bits)):
-    U_diff.append(first_bits[i] - first_bits[i-1])
+print("l =" , l)
 
 L = bytearray()
-x = 8 - l
-L.append(0)
-i = 0
-for number in last_bits:
-    if x > 0:
-        L[i] = L[i] | (number << x)
-        x -= l
-    elif x < 0:
-        L[i] = L[i] | (number >> -x)
-        i += 1
-        L.append(0)
-        L[i] = L[i] | ((number << (8 + x)) & 0xFF)
-        x = 8 + x - l
-    else:
-        L[i] = L[i] | (number << x)
-        if i < math.ceil(l * len(last_bits) / 8) - 1:
-            i += 1
-            L.append(0)
-            x = 8 - l
+number_of_bits_in_L = len(numbers) * l
+bytes_in_L = math.ceil(number_of_bits_in_L / 8)
+for i in range(bytes_in_L):
+    L.append(0)
+
+byte = 0
+bits_in_byte = 0
+for number in numbers:
+    bits = number & ((1 << l) - 1)
+    if bits_in_byte > 8 - l:
+        # overflow
+        L[byte] = L[byte] | (bits >> bits_in_byte - (8 - l))
+        bits_in_byte = bits_in_byte - 8
+        byte += 1
+    L[byte] = L[byte] | (bits << (8 - l - bits_in_byte)) & 0xFF
+    bits_in_byte += l
 
 # print L bytes
 print("L")
@@ -50,18 +38,17 @@ for i in L:
     print(f"{i:08b}")
 
 U = bytearray()
-U.append(0)
-i = 0
-x = -1
-for bit in U_diff:
-    x += bit + 1
-    if x < 8:
-        U[i] = U[i] | (128 >> x)
-    else:
-        U.append(0)
-        i += 1
-        x = x - 8
-        U[i] = U[i] | (128 >> x)
+number_of_bits_in_U = len(numbers) + math.floor(m/2**l)
+bytes_in_U = math.ceil(number_of_bits_in_U / 8)
+for i in range(bytes_in_U):
+    U.append(0)
+
+for i, number in enumerate(numbers):
+    bits = number >> l
+    to_be_1 = i + bits
+    byte = to_be_1 // 8
+    bit = to_be_1 % 8
+    U[byte] = U[byte] | (1 << (7 - bit))
 
 print("U")
 for i in U:
