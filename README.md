@@ -32,3 +32,7 @@ The initial list needs `n⌈lgm⌉` bits if every integer is stored with the sam
 *U* needs `⌊m/2^l⌋` bits  
 
 We save : `n⌈lgm⌉ - n⌊lg(m/n)⌋ - ⌊m/2^l⌋ = n*lgm - n*lgm + n*lgn - m/2^l = n*lgn - m/2^l` bits
+
+
+This type of compression has the characteristic that we don't need to decompress all data to find the value of a part of them. Specifically, when we want to extract an integer we don't have to reproduce the whole list from *U* and *L*. For example, to find the third integer (starting from zero) of the list we know from the construction of *L* that the last bits are located in the `[i*l, (i+1)*l)` places of *L*. For the first bits we look at *U* and we find the third occurrence of 1 which is in the 8th place. If from this number we subtract the number of 1 we will get the number of 0 until this place. The number of zeros is the sum of the differences until the 8th 1 and so the first bits we are looking for : `8 - 3 = 5 => 0101`
+
